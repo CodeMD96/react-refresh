@@ -1,46 +1,83 @@
 import React, { useState, useEffect } from "react";
 import './App.css';
-import { Login } from "./components/login";
+// import { Login } from "./components/login";
+import { signUpFetch, logInFetch, updateFetch, cancelFetch, tokenCheck } from "./utils";
 
 const App = () => {
   const [user, setUser] = useState();
   const [username, setUsername] = useState();
-  const [arr, setArr] = useState([]);
+  const [email, setEmail] = useState();
+  const [password, setPassword] = useState();
 
-    useEffect(() => {
-      fetchReq()
-    }, [])
+  useEffect(() => {
+    tokenCheck(setUser);
+  }, []);
 
-  const submitHandler = (e) => {
+  const signUpHandler = async (e) => {
     e.preventDefault();
-    setUsername(user);
+    signUpFetch(username, email, password, setUser);
+    setPassword();
   }
 
-  const fetchReq = async () => {
-    const response = await fetch("https://picsum.photos/v2/list");
-    const data = await response.json();
-    setArr(data)
-    // for (let i=0; i <20; i++) {
-    //   const tempArr = arr;
-    //   tempArr.push("https://picsum.photos/200");
-    //   setArr(tempArr);
-    // }
+  const logInHandler = async (e) => {
+    e.preventDefault();
+    logInFetch(username, password, setUser);
+  }
+
+  const logOutHandler = async (e) => {
+    e.preventDefault();
+    localStorage.removeItem("myToken");
+    setUser();
+  }
+  
+  const updateHandler = async (e) => {
+    e.preventDefault();
+    updateFetch(user, email);
+  }
+
+  const cancelHandler = async (e) => {
+    e.preventDefault();
+    cancelFetch(user, password, setUser);
   }
 
   return (
     <div className="App">
       <h1>{user}</h1>
-      {username ? <h1>Welcome {username}</h1> : <h1>Please log in</h1>}
-      {username && <h2>Sucess</h2>}
-      <Login setter={setUser} handler={submitHandler} />
-      {arr.map((item, i) => {
-        return(
-          <div>
-            <p key={i}>{item.author}</p>
-            <img className="imageList" src={item.download_url} alt="random image" />
-          </div>
-        )
-      })}
+      {!user ? (
+        <div>
+          <form onSubmit={signUpHandler}>
+            <label>Sign up</label>
+            <input onChange={(e) => setUsername(e.target.value)} placeholder="Username"/>
+            <input onChange={(e) => setEmail(e.target.value) } placeholder="Email"/>
+            <input onChange={(e) => setPassword(e.target.value)} placeholder="Password"/>
+            <button type="submit">Submit</button>
+          </form>
+          <form onSubmit={logInHandler}>
+            <label>Log in</label>
+            <input onChange={(e) => setUsername(e.target.value)} placeholder="Username"/>
+            <input onChange={(e) => setPassword(e.target.value)} placeholder="Password"/>
+            <button type="submit">Submit</button>
+          </form>
+      </div>
+      ) : (
+        <div>
+          <h2>You are logged in</h2>
+          <form onSubmit={logOutHandler}>
+            <label>Logout</label>
+            <button type="submit">Submit</button>
+          </form>
+          <form onSubmit={updateHandler}>
+            <label>Update email</label>
+            <input onChange={(e) => setEmail(e.target.value)} placeholder="New email"/>
+            <button type="submit">Submit</button>
+          </form>
+          <form onSubmit={cancelHandler}>
+            <label>Cancel account</label>
+            <input onChange={(e) => setPassword(e.target.value)} placeholder="Password"/>
+            <button type="submit">Submit</button>
+          </form>
+        </div>
+      )}
     </div>
   );
 }
